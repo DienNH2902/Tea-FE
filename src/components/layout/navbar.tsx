@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Heart, Leaf, Menu, Moon, ShoppingCart, Sun, User } from "lucide-react";
+import {
+  Heart,
+  Leaf,
+  LayoutDashboard,
+  Menu,
+  Moon,
+  ShoppingCart,
+  Sun,
+  User,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,13 +23,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useLogout } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/utils";
+import { RoleEnum } from "@/types";
 import { SidebarNav } from "@/components/layout/sidebar";
 
 /**
@@ -44,7 +60,12 @@ export function NavBar() {
         {/* Nút mở Sidebar dạng Sheet trên mobile (< md) */}
         <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden" aria-label="Mở menu">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              aria-label="Mở menu"
+            >
               <Menu className="size-5" />
             </Button>
           </SheetTrigger>
@@ -80,7 +101,13 @@ export function NavBar() {
         </Button>
 
         {/* Yêu thích */}
-        <Button variant="ghost" size="icon" className="relative" asChild aria-label="Danh sách yêu thích">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          asChild
+          aria-label="Danh sách yêu thích"
+        >
           <Link href="/wishlist">
             <Heart className="size-5" />
             {!!wishlist?.length && (
@@ -92,7 +119,13 @@ export function NavBar() {
         </Button>
 
         {/* Giỏ hàng */}
-        <Button variant="ghost" size="icon" className="relative" asChild aria-label="Giỏ hàng">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          asChild
+          aria-label="Giỏ hàng"
+        >
           <Link href="/cart">
             <ShoppingCart className="size-5" />
             {cartCount > 0 && (
@@ -107,7 +140,12 @@ export function NavBar() {
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full" aria-label="Tài khoản">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                aria-label="Tài khoản"
+              >
                 <Avatar>
                   <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
@@ -116,7 +154,9 @@ export function NavBar() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <p className="font-medium">{user.name}</p>
-                <p className="text-muted-foreground text-xs font-normal">{user.email}</p>
+                <p className="text-muted-foreground text-xs font-normal">
+                  {user.email}
+                </p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
@@ -129,6 +169,17 @@ export function NavBar() {
                   <ShoppingCart /> Đơn hàng của tôi
                 </Link>
               </DropdownMenuItem>
+              {/* Chỉ hiện với ADMIN/MANAGER - đây là LỐI VÀO duy nhất tới
+                  layout quản trị; `proxy.ts` chỉ CHẶN sai quyền, không tự
+                  đưa người dùng tới đây, nên bắt buộc phải có link rõ ràng. */}
+              {(user.role === RoleEnum.ADMIN ||
+                user.role === RoleEnum.MANAGER) && (
+                <DropdownMenuItem asChild>
+                  <Link href="/admin">
+                    <LayoutDashboard /> Trang quản trị
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onClick={logout}>
                 Đăng xuất

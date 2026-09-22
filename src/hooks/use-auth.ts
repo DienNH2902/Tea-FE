@@ -6,6 +6,7 @@ import { queryKeys } from "@/lib/query-keys";
 import {
   LoginPayload,
   RegisterPayload,
+  RoleEnum,
   UpdatePasswordPayload,
   UpdateProfilePayload,
 } from "@/types";
@@ -15,7 +16,8 @@ import { useAuthStore } from "@/store/auth-store";
 import { reconnectOrderSocket, disconnectOrderSocket } from "@/lib/socket";
 
 /** useLogin - đăng nhập: gọi API -> lưu token vào cookie -> lưu user vào
- * store -> kết nối lại WebSocket với token mới -> điều hướng vào trang chủ. */
+ * store -> kết nối lại WebSocket với token mới -> điều hướng theo vai trò
+ * (ADMIN/MANAGER vào thẳng "/admin", còn lại vào "/home"). */
 export function useLogin() {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
@@ -45,7 +47,17 @@ export function useLogin() {
       setUser(data.user);
       reconnectOrderSocket();
       toast.success(`Chào mừng trở lại, ${data.user.name}!`);
-      router.push("/home");
+
+      // LỖI THỰC TẾ ĐÃ XẢY RA: trước đây LUÔN điều hướng cứng về "/home"
+      // (trang dành cho khách hàng) bất kể vai trò gì - khiến đăng nhập
+      // bằng tài khoản admin/manager vẫn rơi vào layout khách hàng, phải
+      // tự gõ tay URL "/admin" mới vào được layout quản trị. `proxy.ts`
+      // (middleware) chỉ CHẶN truy cập sai quyền, không tự ĐƯA người dùng
+      // tới đúng khu vực - 2 việc khác nhau, cả 2 đều cần làm.
+      const isStaff =
+        data.user.role === RoleEnum.ADMIN ||
+        data.user.role === RoleEnum.MANAGER;
+      router.push(isStaff ? "/admin" : "/home");
     },
     onError: (error: Error) => toast.error(error.message),
   });
