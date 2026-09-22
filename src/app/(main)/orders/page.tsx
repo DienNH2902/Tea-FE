@@ -19,7 +19,10 @@ export default function OrdersPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-      <PageHeader title="Đơn hàng của tôi" description="Theo dõi trạng thái đơn hàng theo thời gian thực" />
+      <PageHeader
+        title="Đơn hàng của tôi"
+        description="Theo dõi trạng thái đơn hàng theo thời gian thực"
+      />
 
       {isLoading && (
         <div className="space-y-3">
