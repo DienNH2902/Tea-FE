@@ -21,7 +21,25 @@ export function useLogin() {
   const setUser = useAuthStore((s) => s.setUser);
 
   return useMutation({
-    mutationFn: (payload: LoginPayload) => authApi.login(payload),
+    mutationFn: async (payload: LoginPayload) => {
+      const data = await authApi.login(payload);
+
+      // LỖI THỰC TẾ ĐÃ XẢY RA: code cũ đọc thẳng `data.user.name` mà
+      // KHÔNG kiểm tra `data.user` có tồn tại hay không - nếu response
+      // thiếu field này (dù HTTP status vẫn là thành công), toàn bộ
+      // `onSuccess` bị crash ngay giữa chừng, khiến token/user KHÔNG BAO
+      // GIỜ được lưu và không điều hướng đi đâu cả - trông như "đăng nhập
+      // bị lỗi" dù backend đã trả về 200/201. Validate NGAY TẠI ĐÂY (trước
+      // khi lan sang `onSuccess`) để lỗi hình dạng dữ liệu rơi đúng vào
+      // `onError` (hiện thông báo rõ ràng), không crash cả ứng dụng.
+      if (!data?.access_token || !data?.refresh_token || !data?.user) {
+        throw new Error(
+          "Phản hồi đăng nhập từ máy chủ thiếu dữ liệu cần thiết (token hoặc thông tin người dùng). Vui lòng thử lại hoặc liên hệ quản trị viên.",
+        );
+      }
+
+      return data;
+    },
     onSuccess: (data) => {
       setAuthTokens(data.access_token, data.refresh_token);
       setUser(data.user);
@@ -78,8 +96,13 @@ export function useUpdateProfile() {
   const setUser = useAuthStore((s) => s.setUser);
 
   return useMutation({
-    mutationFn: ({ userId, payload }: { userId: string; payload: UpdateProfilePayload }) =>
-      authApi.updateProfile(userId, payload),
+    mutationFn: ({
+      userId,
+      payload,
+    }: {
+      userId: string;
+      payload: UpdateProfilePayload;
+    }) => authApi.updateProfile(userId, payload),
     onSuccess: (updatedUser) => {
       toast.success("Đã cập nhật hồ sơ");
       setUser(updatedUser);
@@ -91,7 +114,8 @@ export function useUpdateProfile() {
 
 export function useChangePassword() {
   return useMutation({
-    mutationFn: (payload: UpdatePasswordPayload) => authApi.changePassword(payload),
+    mutationFn: (payload: UpdatePasswordPayload) =>
+      authApi.changePassword(payload),
     onSuccess: () => toast.success("Đã đổi mật khẩu thành công"),
     onError: (error: Error) => toast.error(error.message),
   });
