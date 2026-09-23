@@ -34,7 +34,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="from-primary/10 flex flex-1 flex-col items-center justify-center gap-6 bg-gradient-to-b to-transparent px-4 py-20 text-center">
+      <section className="from-primary/10 flex flex-1 flex-col items-center justify-center gap-6 bg-linear-to-b to-transparent px-4 py-20 text-center">
         <span className="bg-primary/10 text-primary rounded-full px-4 py-1 text-sm font-medium">
           🍵 Hơn 50+ loại trà chọn lọc
         </span>
