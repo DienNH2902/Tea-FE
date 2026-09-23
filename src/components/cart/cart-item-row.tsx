@@ -22,7 +22,7 @@ export function CartItemRow({ item }: { item: ShopCartItem }) {
     <div className="flex items-center gap-4 border-b py-4 last:border-0">
       <div
         className={cn(
-          "flex size-16 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br",
+          "flex size-16 shrink-0 items-center justify-center rounded-lg bg-linear-to-br",
           visual.gradient,
         )}
       >
